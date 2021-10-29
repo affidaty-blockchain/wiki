@@ -1,0 +1,39 @@
+@startuml dynamic exchange
+
+Seller -> Exchange : init(asset, penalty_asset:20,\nassets:\n["asset1":250, "asset2":31])
+note right : "open"
+Seller -> Exchange :  transfer(asset:100)
+note right : "open"
+
+Buyer -> Asset1: add_delegation(Exchange, 30)
+Buyer -> Exchange: apply(asset1:30)
+Exchange -> Asset1: transfer(30, to: "exchange")
+note right: delegation ok
+Asset1 -> Exchange: transfer(30)
+Exchange -> Guarantor: transfer(asset1: fee)
+Exchange -> Seller: transfer(asset1: (30 - fee))
+Exchange -> Buyer: transfer(asset: 30*250/100)
+note left: asset amount: 25\n"open"
+
+Seller->Penalty_Asset: add_delegation(Exchange, 20)
+Seller->Exchange: abort()
+Exchange->Penalty_Asset: transfer(Guarantor, 20)
+note right: delegation ok
+Penalty_Asset->Guarantor: transfer(20)
+Exchange->Seller: transfer(asset: 25)
+note right: "aborted"
+
+
+'Seller -> Asset : transfer(100, data)
+'Asset -> Exchange: after_transfer(100, data)
+'note left: "idle"
+'Seller -> Penalty_Asset : transfer(20, data)
+'Penalty_Asset -> Exchange: after_transfer(20, data)
+'note left: "open"
+'Buyer -> Asset1: transfer(40, data)
+'Asset1 -> Exchange: after_transfer(40, data)
+'Exchange -> Guarantor: transfer(asset1: fee)
+'Exchange -> Seller: transfer(asset1: (40 - fee))
+'Exchange -> Buyer: transfer(asset: 40*250/100)
+'note left: asset amount: 0\n"exahusted"
+@enduml
